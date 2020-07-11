@@ -9,26 +9,21 @@
     <!-- Below is the HTML code that defines the sidebar element structure. -->
     <div class="sidebar branding-below">
       <p>
-        This sidebar allows you to pull a value from a cell into the sidebar
-        and place a value from the sidebar into a cell.
+        Upload a route CSV file downloaded from ZeeMaps. Matching rows in the
+        current sheet will have their "color" column updated.
       </p>
-      <div class="block form-group" id="sidebar-value-block">
-        <label for="sidebar-value">Sidebar value:</label>
-        <input id="sidebar-value" value="1">
+      <div class="block form-group" id="sidebar-file-selector">
+        <label for="sidebar-files">CSV File(s):</label>
+        <input id="sidebar-files" type="file" multiple accept=".csv">
       </div>
       <div class="block" id="sidebar-button-bar">
-        <button id="sidebar-pull-button">Pull</button>
-        <button id="sidebar-put-button">Put</button>
+        <button id="sidebar-upload-button">Upload</button>
       </div>
       <div id="sidebar-status"></div>
     </div>
 
     <!-- Enter sidebar bottom-branding below. -->
-    <div class="sidebar bottom">
-      <img alt="Add-on logo" class="logo" width="25"
-          src="https://googledrive.com/host/0B0G1UdyJGrY6XzdjQWF4a1JYY1k/apps-script_2x.png">
-      <span class="gray branding-text">Spreadsheet Add-on Template by Google</span>
-    </div>
+    <div class="sidebar bottom"></div>
 
     <!-- Use a templated HTML printing scriptlet to import JavaScript. -->
     <?!= HtmlService.createHtmlOutputFromFile('SidebarJavaScript').getContent(); ?>

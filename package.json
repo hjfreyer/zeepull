@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {},
-  "devDependencies": {
-    "@google/clasp": "^2.3.0",
+  "dependencies": {
     "@types/google-apps-script": "^1.0.14"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.3.0"
   },
   "scripts": {
     "push": "clasp push"

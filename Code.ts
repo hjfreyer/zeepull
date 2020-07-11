@@ -29,8 +29,7 @@
  * @OnlyCurrentDoc  Limits the script to only accessing the current spreadsheet.
  */
 
-var DIALOG_TITLE = 'Example Dialog';
-var SIDEBAR_TITLE = 'Example Sidebar';
+var SIDEBAR_TITLE = 'ZeeMaps Color Update';
 
 /**
  * Adds a custom menu with items to show the sidebar and dialog.
@@ -40,8 +39,7 @@ var SIDEBAR_TITLE = 'Example Sidebar';
 function onOpen(e) {
   SpreadsheetApp.getUi()
       .createAddonMenu()
-      .addItem('Show sidebar', 'showSidebar')
-      .addItem('Show dialog', 'showDialog')
+      .addItem('Update Colors', 'showSidebar')
       .addToUi();
 }
 
@@ -68,19 +66,6 @@ function showSidebar() {
 }
 
 /**
- * Opens a dialog. The dialog structure is described in the Dialog.html
- * project file.
- */
-function showDialog() {
-  var ui = HtmlService.createTemplateFromFile('Dialog')
-      .evaluate()
-      .setWidth(400)
-      .setHeight(190)
-      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
-  SpreadsheetApp.getUi().showModalDialog(ui, DIALOG_TITLE);
-}
-
-/**
  * Returns the value in the active cell.
  *
  * @return {String} The value of the active cell.
@@ -97,9 +82,10 @@ function getActiveValue() {
  * @param {Number} value A reference number to replace with.
  */
 function setActiveValue(value) {
-  // Use data collected from sidebar to manipulate the sheet.
-  var cell = SpreadsheetApp.getActiveSheet().getActiveCell();
-  cell.setValue(value);
+  console.log(value)
+  // // Use data collected from sidebar to manipulate the sheet.
+  // var cell = SpreadsheetApp.getActiveSheet().getActiveCell();
+  // cell.setValue(value);
 }
 
 /**

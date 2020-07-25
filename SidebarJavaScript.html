@@ -32,8 +32,8 @@
     for (let i = 0; i < files.length; i++) {
       loaded.push(null);
     }
-    function putFile(idx, contents, element) {
-      loaded[idx] = contents;
+    function putFile(idx, filename, contents, element) {
+      loaded[idx] = {filename, contents};
       numLoaded++;
       if (numLoaded === files.length) {
         google.script.run
@@ -51,16 +51,16 @@
                 element.disabled = false;
               })
             .withUserObject(element)
-            .setActiveValue(loaded);
+            .doUpdates(loaded);
       }
     }
 
     for (let i = 0; i < files.length; i++) {
       var file = files[i];
       var fr = new FileReader();
-      fr.onload = (function(i, fr) {
-        putFile(i, fr.result, this);
-      }).bind(this, i, fr);
+      fr.onload = (function(i, file, fr) {
+        putFile(i, file.name, fr.result, this);
+      }).bind(this, i, file, fr);
       fr.readAsText(file);
     }
   }

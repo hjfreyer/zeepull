@@ -1,35 +1,9 @@
-// function onOpen() {
-//   const spreadsheet = SpreadsheetApp.getActive();
-//   const menuItems = [
-//     {name: 'Prepare sheet...', functionName: 'doGet'},
-//     {name: 'Generate step-by-step...', functionName: 'generateStepByStep_'}
-//   ];
-//   spreadsheet.addMenu('Directions', menuItems);
-// //    var app = app..createApplication(); 
-// }
-
-
-// function doGet() {
-//      var html = HtmlService.createHtmlOutputFromFile('upload')
-//       .setTitle('My custom sidebar')
-//       .setWidth(300)
-//         .setSandboxMode(HtmlService.SandboxMode.NATIVE);
-//   SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
-//       .showSidebar(html);
-// }
-
-// function processForm(formObject) {
-//     console.log("here", formObject)
-//   var formBlob = formObject.myFile;
-//   var driveFile = DriveApp.createFile(formBlob);
-//   return driveFile.getUrl();
-// }
 
 /**
  * @OnlyCurrentDoc  Limits the script to only accessing the current spreadsheet.
  */
 
-var SIDEBAR_TITLE = 'ZeeMaps Color Update';
+var SIDEBAR_TITLE = 'ZeeMaps Update';
 
 /**
  * Adds a custom menu with items to show the sidebar and dialog.
@@ -39,7 +13,7 @@ var SIDEBAR_TITLE = 'ZeeMaps Color Update';
 function onOpen(e) {
   SpreadsheetApp.getUi()
       .createAddonMenu()
-      .addItem('Update Colors', 'showSidebar')
+      .addItem('Upload CSVs', 'showSidebar')
       .addToUi();
 }
 
@@ -76,33 +50,75 @@ function getActiveValue() {
   return cell.getValue();
 }
 
+type FileMeta = {
+  filename: string
+  contents: string
+}
+
 /**
  * Replaces the active cell value with the given value.
  *
  * @param {Number} value A reference number to replace with.
  */
-function setActiveValue(value) {
-  console.log(value)
-  // // Use data collected from sidebar to manipulate the sheet.
-  // var cell = SpreadsheetApp.getActiveSheet().getActiveCell();
-  // cell.setValue(value);
+function doUpdates(csvFiles: FileMeta[]) {
+  const numberToFilenames = indexFilesByValuesInColumn(csvFiles, "number");
+
+  const sheetNumberColumn = getColumnDataByName("number");
+
+  const newColumn = sheetNumberColumn.map((number, rowIdx) => {
+    if (rowIdx === 0) {
+      return 'In Files'
+    }
+    const numberStr = '' + number;
+    return (numberToFilenames[numberStr] || []).join(",");
+  });
+
+  addColumnLeft(newColumn);
 }
 
 /**
- * Executes the specified action (create a new sheet, copy the active sheet, or
- * clear the current sheet).
+ * Parse a collection of CSV files with a column named `columnName`, and build
+ * an index from values appearing in that column to the set of files it appears
+ * in.
  *
- * @param {String} action An identifier for the action to take.
+ * Throws an exception if any of the CSV files don't have a matching column.
  */
-function modifySheets(action) {
-  // Use data collected from dialog to manipulate the spreadsheet.
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var currentSheet = ss.getActiveSheet();
-  if (action == "create") {
-    ss.insertSheet();
-  } else if (action == "copy") {
-    currentSheet.copyTo(ss);
-  } else if (action == "clear") {
-    currentSheet.clear();
+function indexFilesByValuesInColumn(csvFiles: FileMeta[], columnName: string): Record<string, string[]> {
+  const res : Record<string, string[]> = {};
+  for (const csvFile of csvFiles) {
+    const csv = Utilities.parseCsv(csvFile.contents);
+    const numberColumnIdx = csv[0].indexOf(columnName);
+    if (numberColumnIdx === -1) {
+      throw new Error(`No column named '${columnName}' in uploaded file ${csvFile.filename}`);
+    }
+
+    for (const row of csv.slice(1)) {
+      const number = row[numberColumnIdx];
+      if (!(number in res)) {
+        res[number] = [];
+      }
+      res[number].push(csvFile.filename);
+    }
   }
+  return res;
+}
+
+function getColumnDataByName(columnName: string): unknown[] {
+  const currentSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = currentSheet.getDataRange().getValues();
+
+  const colIdx = data[0].indexOf(columnName);
+  if (colIdx === -1) {
+    throw new Error(`No column named '${columnName}' in the current sheet`);
+  }
+
+  return data.map(row => row[colIdx]);
+}
+
+function addColumnLeft(columnData: string[]): void {
+  const currentSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  currentSheet.insertColumns(1);
+  const newColumnRange = currentSheet.getRange(1, 1, columnData.length, 1);
+  newColumnRange.setValues(columnData.map(value => [value]));
+  currentSheet.autoResizeColumn(1);
 }
